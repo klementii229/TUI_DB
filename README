@@ -1,0 +1,29 @@
+# TUI_DB
+
+Простое TUI-приложение для работы с базами данных SQLite и PostgreSQL.
+
+---
+
+## Зависимости
+
+1. **FTXUI** (автоматически устанавливается через CMake)
+2. **pkg-config**
+3. **libpq-dev** (PostgreSQL)
+4. **libsqlite3-dev** (SQLite)
+
+---
+
+## Установка зависимостей
+
+### На Debian/Ubuntu:
+
+```bash
+sudo apt update
+sudo apt install build-essential cmake pkg-config libpq-dev libsqlite3-dev
+```
+
+### На Archlinux:
+
+```bash
+sudo pacman -S base-devel cmake pkgconf postgresql-libs sqlite
+```

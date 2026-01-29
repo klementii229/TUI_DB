@@ -1,0 +1,5 @@
+.zed/
+build/
+.cache/
+.vscode/
+chinook.db
