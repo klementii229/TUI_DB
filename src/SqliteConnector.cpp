@@ -31,11 +31,18 @@ std::expected<Table, std::string> SQLiteConnector::FetchAll(const std::string& q
    }
 
    int column_count = sqlite3_column_count(stmt);
+   std::vector<std::string> column_names;
+   for (int i = 0; i < column_count; ++i) {
+      const char* column_name = sqlite3_column_name(stmt, i);
+      column_names.push_back(column_name ? column_name : "NULL");
+   }
+   result.push_back(std::move(column_names));
 
    while ((ret_code = sqlite3_step(stmt)) == SQLITE_ROW) {
       Row row;
       for (int i = 0; i < column_count; ++i) {
          const char* column_value = reinterpret_cast<const char*>(sqlite3_column_text(stmt, i));
+         row.reserve(column_count);
          row.push_back(column_value ? column_value : "NULL");
       }
       result.push_back(row);
@@ -52,9 +59,7 @@ std::expected<Table, std::string> SQLiteConnector::FetchAll(const std::string& q
 }
 
 std::expected<int, std::string> SQLiteConnector::ExecuteUpdate(const std::string& query) const {
-   char* error_msg = nullptr;
-
-   int ret_code = sqlite3_exec(db, query.c_str(), nullptr, nullptr, &error_msg);
+   int ret_code = sqlite3_exec(db, query.c_str(), nullptr, nullptr, nullptr);
 
    if (ret_code != SQLITE_OK) {
       std::string error_message = sqlite3_errmsg(db);
@@ -63,9 +68,6 @@ std::expected<int, std::string> SQLiteConnector::ExecuteUpdate(const std::string
           std::format("Ошибка запроса в SQLiteConnector::ExecuteQuery {}:{} {}", loc.line(), loc.column(), error_message));
    }
    int rows_affected = sqlite3_changes(db);
-   if (error_msg) {
-      sqlite3_free(error_msg);
-   }
 
    return rows_affected;
 }
