@@ -1,6 +1,7 @@
 #include "DatabaseExplorer.hpp"
 
 #include <cctype>
+#include <cstddef>
 #include <format>
 #include <ftxui/component/component.hpp>
 #include <ftxui/dom/elements.hpp>
@@ -10,7 +11,7 @@
 #include "DataBaseInterface.hpp"
 
 static ftxui::ButtonOption CreateRoundedButtonOption();
-static void FormatTable(ftxui::Table& table);
+static std::vector<ftxui::Elements> FormatTable(const Table& table);
 
 DataBaseExplorer::DataBaseExplorer(std::unique_ptr<IDatabaseConnector> conn_)
     : screen(ftxui::ScreenInteractive::Fullscreen()), conn(std::move(conn_)) {
@@ -47,9 +48,9 @@ void DataBaseExplorer::Ininitalize() {
       if (db_result.empty()) {
          return ftxui::text("No data") | ftxui::center | ftxui::flex;
       }
-
-      auto ftxui_table = ftxui::Table(db_result);
-      FormatTable(ftxui_table);
+      auto format_table = FormatTable(db_result);
+      auto ftxui_table = ftxui::Table(format_table);
+      // FormatTable(ftxui_table);
       return ftxui_table.Render() | ftxui::focusPositionRelative(scroll_x, scroll_y) | ftxui::frame | ftxui::vscroll_indicator |
              ftxui::hscroll_indicator | ftxui::flex;
    });
@@ -98,6 +99,29 @@ void DataBaseExplorer::Ininitalize() {
        },
        CreateRoundedButtonOption());
 }
-static void FormatTable(ftxui::Table& table) {
-   table.SelectAll().Decorate([](ftxui::Element e) { return e | ftxui::center; });
+
+static std::vector<ftxui::Elements> FormatTable(const Table& table) {
+   using namespace ftxui;
+   std::vector<Elements> out{};
+   out.reserve(table.size());
+
+   for (size_t i = 0; i < table.size(); i++) {
+       out.emplace_back();
+       auto& out_row = out.back();
+       out_row.reserve(table[i].size() * 2);
+       for (size_t j = 0; j < table[i].size(); j++) {
+          if (table[i][j] == "NULL") {
+               out_row.push_back(text(table[i][j]) | color(Color::Blue));
+               out_row.push_back(separator());
+         }
+        else {
+           out_row.push_back(text(table[i][j]));
+           if (j != table[i].size() - 1){
+             out_row.push_back(separator());}
+         }
+       }
+
+   }
+
+   return out;
 }
