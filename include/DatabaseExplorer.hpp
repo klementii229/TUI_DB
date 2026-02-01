@@ -6,8 +6,10 @@
 #include <ftxui/dom/node.hpp>
 #include <ftxui/dom/table.hpp>
 #include <memory>
+#include <vector>
 
 #include "DataBaseInterface.hpp"
+using FormTablElem = std::vector<ftxui::Elements>;
 
 class DataBaseExplorer {
   public:
@@ -34,4 +36,9 @@ class DataBaseExplorer {
    float scroll_y = 0.0f;
    ftxui::Component slider_x;
    ftxui::Component slider_y;
+   std::vector<FormTablElem> pages;
+
+
+   int current_page = 0;
+   const int rows_per_page = 300;
 };
