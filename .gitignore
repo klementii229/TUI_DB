@@ -1,0 +1,10 @@
+.zed/
+build/
+.cache/
+.vscode/
+chinook.db
+.idea
+CMakeUserPresets.json
+README_DIMA.txt
+*.db
+compile_commands.json
