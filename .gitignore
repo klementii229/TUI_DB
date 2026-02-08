@@ -7,3 +7,4 @@ chinook.db
 CMakeUserPresets.json
 README_DIMA.txt
 *.db
+compile_commands.json
