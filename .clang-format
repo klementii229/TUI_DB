@@ -1,0 +1,9 @@
+BasedOnStyle: Google
+IndentWidth: 3
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 120
+#AllowAllArgumentsOnNextLine: true
+#BinPackArguments: true
+#BinPackParameters: true
+#AlignAfterOpenBracket: DontAlign
