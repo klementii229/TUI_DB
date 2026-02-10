@@ -4,8 +4,9 @@
 #include <vector>
 
 #include "DataBaseExplorer.hpp"
+#include "DataBaseInterface.hpp"
 #include "LoginForm.hpp"
-// #include "SqliteConnector.hpp"
+#include "SqliteConnector.hpp"
 
 using Row = std::vector<std::string>;
 using Table = std::vector<Row>;
@@ -28,9 +29,9 @@ int main(void) {
       return 1;
       }*/
 
-   /*  std::unique_ptr<IDatabaseConnector> conn = std::make_unique<SQLiteConnector>();
-    conn->Connect("chinook.db");
-    DataBaseExplorer exp = {std::move(conn)};
-    exp.RUN();*/
+   std::unique_ptr<SQLiteConnector> conn = std::make_unique<SQLiteConnector>();
+   conn->Connect("chinook.db");
+   DataBaseExplorer exp = {std::move(conn)};
+   exp.RUN();
    return 0;
 }

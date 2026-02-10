@@ -3,31 +3,28 @@
 #include <sqlite3.h>
 
 #include <format>
-#include <source_location>
+#include <print>
 
 #include "DataBaseInterface.hpp"
 
-std::expected<bool, std::string> SQLiteConnector::Connect(const std::string& connectionString) {
+std::expected<bool, DbError> SQLiteConnector::Connect(const std::string& connectionString) {
    if (sqlite3_open(connectionString.c_str(), &db) == SQLITE_OK) {
       return true;
    }
-   std::string errorMessage = sqlite3_errmsg(db);
+   std::println(stderr, "[SQLite Error] Connection failed: {}", sqlite3_errmsg(db));
    sqlite3_close(db);
    db = nullptr;
-
-   return std::unexpected(errorMessage);
+   return std::unexpected(DbError::ConnectionFailed);
 }
 
-std::expected<Table, std::string> SQLiteConnector::FetchAll(const std::string& query) {
+std::expected<Table, DbError> SQLiteConnector::FetchAll(const std::string& query) {
    Table result;
    sqlite3_stmt* stmt{};
 
    int ret_code = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
    if (ret_code != SQLITE_OK) {
-      std::string error_message = sqlite3_errmsg(db);
-      constexpr std::source_location loc = std::source_location::current();
-      return std::unexpected(
-          std::format("Ошибка запроса в SQLiteConnector::ExecuteQuery {}:{} {}", loc.line(), loc.column(), error_message));
+      std::println(stderr, "[SQLite Error] Execute error: {}", sqlite3_errmsg(db));
+      return std::unexpected(DbError::QuerySyntax);
    }
 
    int column_count = sqlite3_column_count(stmt);
@@ -48,42 +45,37 @@ std::expected<Table, std::string> SQLiteConnector::FetchAll(const std::string& q
       result.push_back(row);
    }
    if (ret_code != SQLITE_DONE) {
-      std::string error_message = sqlite3_errmsg(db);
-      constexpr std::source_location loc = std::source_location::current();
-      return std::unexpected(
-          std::format("Ошибка завершения запроса в SQLiteConnector::ExecuteQuery {}:{} {}", loc.line(), loc.column(), error_message));
+      std::println(stderr, "[SQLite Error] Execute error: {}", sqlite3_errmsg(db));
+      return std::unexpected(DbError::ExecuteError);
    }
 
    sqlite3_finalize(stmt);
    return result;
 }
 
-std::expected<int, std::string> SQLiteConnector::ExecuteUpdate(const std::string& query) const {
+std::expected<int, DbError> SQLiteConnector::ExecuteUpdate(const std::string& query) const {
    int ret_code = sqlite3_exec(db, query.c_str(), nullptr, nullptr, nullptr);
 
    if (ret_code != SQLITE_OK) {
-      std::string error_message = sqlite3_errmsg(db);
-      constexpr std::source_location loc = std::source_location::current();
-      return std::unexpected(
-          std::format("Ошибка запроса в SQLiteConnector::ExecuteQuery {}:{} {}", loc.line(), loc.column(), error_message));
+      std::println(stderr, "[SQLite Error] Execute error: {}", sqlite3_errmsg(db));
+      return std::unexpected(DbError::ExecuteError);
    }
    int rows_affected = sqlite3_changes(db);
 
    return rows_affected;
 }
 
-std::expected<Row, std::string> SQLiteConnector::GetTableList() {
+std::expected<Row, DbError> SQLiteConnector::GetTableList() {
    std::string query =
        "SELECT name FROM sqlite_master "
        "WHERE type='table' AND name NOT LIKE 'sqlite_%' "
        "ORDER BY name";
    sqlite3_stmt* stmt{};
    int return_code = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+
    if (return_code != SQLITE_OK) {
-      std::string error_message = sqlite3_errmsg(db);
-      constexpr std::source_location loc = std::source_location::current();
-      return std::unexpected(
-          std::format("Ошибка списка таблиц SQLiteConnector::GetTableList {}:{} {}", loc.line(), loc.column(), error_message));
+      std::println(stderr, "[SQLite Error] Unknown error: {}", sqlite3_errmsg(db));
+      return std::unexpected(DbError::Unknown);
    }
 
    std::vector<std::string> result{};
@@ -95,26 +87,22 @@ std::expected<Row, std::string> SQLiteConnector::GetTableList() {
       }
    }
    if (return_code != SQLITE_DONE) {
-      std::string error_message = sqlite3_errmsg(db);
-      constexpr std::source_location loc = std::source_location::current();
-      return std::unexpected(
-          std::format("Ошибка завершения запроса в SQLiteConnector::GetTableList {}:{} {}", loc.line(), loc.column(), error_message));
+      std::println(stderr, "[SQLite Error] Unknown error: {}", sqlite3_errmsg(db));
+      return std::unexpected(DbError::Unknown);
    }
    sqlite3_finalize(stmt);
    return result;
 }
 
-std::expected<Row, std::string> SQLiteConnector::GetTableSchema(const std::string& tableName) {
+std::expected<Row, DbError> SQLiteConnector::GetTableSchema(const std::string& tableName) {
    std::string query = std::format("select sql from sqlite_master where type = 'table' and name = '{}'", tableName);
 
    sqlite3_stmt* stmt = nullptr;
    int ret_code = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
 
    if (ret_code != SQLITE_OK) {
-      std::string error_message = sqlite3_errmsg(db);
-      auto loc = std::source_location::current();
-      return std::unexpected(std::format("Ошибка получения схемы таблицы {} в SQLiteConnector::GetTableSchema {}:{} {}", tableName,
-                                         loc.line(), loc.column(), error_message));
+      std::println(stderr, "[SQLite Error] Table no found: {}", sqlite3_errmsg(db));
+      return std::unexpected(DbError::TableNotFound);
    }
 
    Row result;
@@ -128,15 +116,13 @@ std::expected<Row, std::string> SQLiteConnector::GetTableSchema(const std::strin
    } else {
       // Таблица не найдена
       sqlite3_finalize(stmt);
-      return std::unexpected(std::format("Таблица '{}' не найдена в SQLiteConnector::GetTableSchema", tableName));
+      std::println(stderr, "[SQLite Error] Table no found: {}", sqlite3_errmsg(db));
+      return std::unexpected(DbError::TableNotFound);
    }
 
    if (sqlite3_step(stmt) != SQLITE_DONE) {
-      std::string error_message = sqlite3_errmsg(db);
-      auto loc = std::source_location::current();
-      sqlite3_finalize(stmt);
-      return std::unexpected(
-          std::format("Ошибка завершения запроса в SQLiteConnector::GetTableSchema {}:{} {}", loc.line(), loc.column(), error_message));
+      std::println(stderr, "[SQLite Error] Execute error: {}", sqlite3_errmsg(db));
+      return std::unexpected(DbError::ExecuteError);
    }
 
    sqlite3_finalize(stmt);

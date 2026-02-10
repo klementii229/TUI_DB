@@ -1,15 +1,13 @@
-#include <DataBaseInterface.hpp>
-#include <cstddef>
+#pragma once
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/table.hpp>
-#include <string>
 
 #include "DataBaseExplorer.hpp"
 
 ftxui::ButtonOption CreateRoundedButtonOption();
-std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page = 500);
+std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page);
 
 template <DatabaseConnection Connector>
 DataBaseExplorer<Connector>::DataBaseExplorer(std::unique_ptr<Connector> conn_)
@@ -65,6 +63,7 @@ ftxui::ButtonOption CreateRoundedButtonOption() {
    return option;
 }
 template <DatabaseConnection Connector>
+
 void DataBaseExplorer<Connector>::Ininitalize() {
    req_input = ftxui::Input(&req_text, "Enter SQL request") | ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 1) |
                ftxui::flex | ftxui::border;
@@ -104,22 +103,26 @@ void DataBaseExplorer<Connector>::Ininitalize() {
                 db_result = std::move(res.value());
                 pages.reserve(db_result.size() / rows_per_page);
              } else {
-                db_result = {{res.error()}};
+                // db_result = {{res.error()}};      TODO
+                db_result = {{"Ошибка при выполнении запроса"}};
              }
           } else {
              auto res = conn->ExecuteUpdate(req_text);
              if (res.has_value()) {
                 db_result = {{std::format("Success, rows affected: {}", res.value())}};
              } else {
-                db_result = {{res.error()}};
+                // db_result = {{res.error()}}; TODO
+                db_result = {{"Ошибка при выполнении запроса"}};
              }
           }
           screen.Post(ftxui::Event::Custom);
        },
        CreateRoundedButtonOption());
 }
+
 template <DatabaseConnection Connector>
-std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page) {
+std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Table& table, int current_page,
+                                                                      const int rows_per_page) {
    using namespace ftxui;
    std::vector<Elements> out{};
    size_t start_index = rows_per_page * current_page;
@@ -145,7 +148,6 @@ std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, c
          }
       }
    }
-
    for (size_t i = start_index; i < end_index; i++) {
       out.emplace_back();
       auto& out_row = out.back();
@@ -162,6 +164,5 @@ std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, c
          }
       }
    }
-
    return out;
 }

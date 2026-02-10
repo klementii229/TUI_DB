@@ -2,25 +2,22 @@
 #include "DataBaseInterface.hpp"
 
 struct sqlite3;
-
-class SQLiteConnector : public IDatabaseConnector {
+// TODO сделать что сказа епта бафер и оставить 1 метод для sql запросов
+class SQLiteConnector {
   private:
    sqlite3* db = nullptr;
 
   public:
-   // ##############################################################
-   std::expected<int, std::string> ExecuteUpdate(const std::string& query) const override;
-   std::expected<Table, std::string> FetchAll(const std::string& query) override;
-   // ##############################################################
-   // ##############################################################
-   std::expected<Row, std::string> GetTableList() override;
-   std::expected<Row, std::string> GetTableSchema(const std::string& tableName) override;
-   // ##############################################################
+   std::expected<int, DbError> ExecuteUpdate(const std::string& query) const;
+   std::expected<Table, DbError> FetchAll(const std::string& query);
+
+   std::expected<Row, DbError> GetTableList();
+   std::expected<Row, DbError> GetTableSchema(const std::string& tableName);
 
    SQLiteConnector() = default;
-   std::expected<bool, std::string> Connect(const std::string& connectionString) override;
-   ~SQLiteConnector() override;
-   void Disconnect() override;
+   std::expected<bool, DbError> Connect(const std::string& connectionString);
+   ~SQLiteConnector();
+   void Disconnect();
 
    SQLiteConnector(const SQLiteConnector&) = default;
    SQLiteConnector(SQLiteConnector&&) = default;
