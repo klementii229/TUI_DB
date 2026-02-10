@@ -1,4 +1,5 @@
 #pragma once
+#include <concepts>
 #include <expected>
 #include <string>
 #include <vector>
@@ -6,26 +7,20 @@
 using Row = std::vector<std::string>;
 using Table = std::vector<Row>;
 
-class IDatabaseConnector {
-  public:
-   // ##########################################
-   virtual std::expected<Table, std::string> FetchAll(const std::string& query) = 0;  // Получение результатов с запроса
+enum class DbError {
+   Success = 0,
+   QuerySyntax,       // Ошибка в тексте запроса
+   ConnectionFailed,  // Не удалось открыть файл/подключиться
+   ExecuteError,      // Ошибка при записи/удалении
+   TableNotFound,     // Таблицы не существует
+   Unknown
+};
 
-   virtual std::expected<int, std::string> ExecuteUpdate(const std::string& command) const = 0;
-   // Выполнение запроса без результата
-   // ##########################################
-
-   virtual std::expected<Row, std::string> GetTableList() = 0;                                // Список таблиц в базе
-   virtual std::expected<Row, std::string> GetTableSchema(const std::string& tableName) = 0;  // Схема конкретной таблицы
-
-   // ##########################################
-   virtual std::expected<bool, std::string> Connect(const std::string& connectionString) = 0;
-   virtual void Disconnect() = 0;
-   // ##########################################
-   virtual ~IDatabaseConnector() = default;
-   IDatabaseConnector() = default;
-   IDatabaseConnector(const IDatabaseConnector&) = default;
-   IDatabaseConnector(IDatabaseConnector&&) = default;
-   IDatabaseConnector& operator=(const IDatabaseConnector&) = default;
-   IDatabaseConnector& operator=(IDatabaseConnector&&) = default;
+template <typename T>
+concept DatabaseConnection = requires(T conn, const std::string& query) {
+   // Теперь возвращаем DbError вместо std::string
+   { conn.Connect(query) } -> std::same_as<std::expected<bool, DbError>>;
+   { conn.FetchAll(query) } -> std::same_as<std::expected<Table, DbError>>;
+   { conn.ExecuteUpdate(query) } -> std::same_as<std::expected<int, DbError>>;
+   { conn.Disconnect() } -> std::same_as<void>;
 };

@@ -9,18 +9,20 @@
 #include <vector>
 
 #include "DataBaseInterface.hpp"
+
 using FormTablElem = std::vector<ftxui::Elements>;
 
+template <DatabaseConnection Connector>
 class DataBaseExplorer {
   public:
    void RUN();
 
-   DataBaseExplorer(std::unique_ptr<IDatabaseConnector> conn_);
+   DataBaseExplorer(std::unique_ptr<Connector> conn_);
    DataBaseExplorer() = delete;
 
   private:
    void Ininitalize();
-   std::unique_ptr<IDatabaseConnector> conn;
+   std::unique_ptr<Connector> conn;
    ftxui::ScreenInteractive screen;
 
    ftxui::Component main_window;
@@ -37,7 +39,6 @@ class DataBaseExplorer {
    ftxui::Component slider_x;
    ftxui::Component slider_y;
    std::vector<FormTablElem> pages;
-
 
    int current_page = 0;
    const int rows_per_page = 300;

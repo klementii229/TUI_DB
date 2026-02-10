@@ -1,20 +1,18 @@
-#include "DatabaseExplorer.hpp"
-
-#include <cctype>
+#include <DataBaseInterface.hpp>
 #include <cstddef>
-#include <format>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/table.hpp>
 #include <string>
 
-#include "DataBaseInterface.hpp"
+#include "DataBaseExplorer.hpp"
 
-static ftxui::ButtonOption CreateRoundedButtonOption();
-static std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page = 500);
+ftxui::ButtonOption CreateRoundedButtonOption();
+std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page = 500);
 
-DataBaseExplorer::DataBaseExplorer(std::unique_ptr<IDatabaseConnector> conn_)
+template <DatabaseConnection Connector>
+DataBaseExplorer<Connector>::DataBaseExplorer(std::unique_ptr<Connector> conn_)
     : screen(ftxui::ScreenInteractive::Fullscreen()), conn(std::move(conn_)) {
    Ininitalize();
    main_container = ftxui::Container::Vertical({req_input, btn_send_req, table_component, slider_x, slider_y});
@@ -51,9 +49,12 @@ DataBaseExplorer::DataBaseExplorer(std::unique_ptr<IDatabaseConnector> conn_)
                  });
 }
 
-void DataBaseExplorer::RUN() { screen.Loop(main_window); }
+template <DatabaseConnection Connector>
+void DataBaseExplorer<Connector>::RUN() {
+   screen.Loop(main_window);
+}
 
-static ftxui::ButtonOption CreateRoundedButtonOption() {
+ftxui::ButtonOption CreateRoundedButtonOption() {
    ftxui::ButtonOption option;
    option.transform = [](const ftxui::EntryState& s) {
       auto text_element = ftxui::text(s.label) | ftxui::center;
@@ -63,8 +64,8 @@ static ftxui::ButtonOption CreateRoundedButtonOption() {
    };
    return option;
 }
-
-void DataBaseExplorer::Ininitalize() {
+template <DatabaseConnection Connector>
+void DataBaseExplorer<Connector>::Ininitalize() {
    req_input = ftxui::Input(&req_text, "Enter SQL request") | ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 1) |
                ftxui::flex | ftxui::border;
 
@@ -117,8 +118,8 @@ void DataBaseExplorer::Ininitalize() {
        },
        CreateRoundedButtonOption());
 }
-
-static std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page) {
+template <DatabaseConnection Connector>
+std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page) {
    using namespace ftxui;
    std::vector<Elements> out{};
    size_t start_index = rows_per_page * current_page;
