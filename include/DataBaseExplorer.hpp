@@ -6,21 +6,24 @@
 #include <ftxui/dom/node.hpp>
 #include <ftxui/dom/table.hpp>
 #include <memory>
-#include <vector>
 
 #include "DataBaseInterface.hpp"
+
 using FormTablElem = std::vector<ftxui::Elements>;
 
+template <DatabaseConnection Connector>
 class DataBaseExplorer {
   public:
    void RUN();
 
-   DataBaseExplorer(std::unique_ptr<IDatabaseConnector> conn_);
+   DataBaseExplorer(std::unique_ptr<Connector> conn_);
    DataBaseExplorer() = delete;
 
   private:
    void Ininitalize();
-   std::unique_ptr<IDatabaseConnector> conn;
+   std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page);
+
+   std::unique_ptr<Connector> conn;
    ftxui::ScreenInteractive screen;
 
    ftxui::Component main_window;
@@ -38,7 +41,7 @@ class DataBaseExplorer {
    ftxui::Component slider_y;
    std::vector<FormTablElem> pages;
 
-
    int current_page = 0;
    const int rows_per_page = 300;
 };
+#include "DataBaseExplorer.ipp"

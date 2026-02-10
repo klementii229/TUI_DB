@@ -1,11 +1,10 @@
-#include <iostream>
+
 #include <memory>
-#include <pqxx/pqxx>
-#include <print>
 #include <string>
 #include <vector>
 
-#include "DatabaseExplorer.hpp"
+#include "DataBaseExplorer.hpp"
+#include "DataBaseInterface.hpp"
 #include "LoginForm.hpp"
 #include "SqliteConnector.hpp"
 
@@ -30,7 +29,7 @@ int main(void) {
       return 1;
       }*/
 
-   std::unique_ptr<IDatabaseConnector> conn = std::make_unique<SQLiteConnector>();
+   std::unique_ptr<SQLiteConnector> conn = std::make_unique<SQLiteConnector>();
    conn->Connect("chinook.db");
    DataBaseExplorer exp = {std::move(conn)};
    exp.RUN();
