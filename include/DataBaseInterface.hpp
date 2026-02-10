@@ -18,7 +18,6 @@ enum class DbError {
 
 template <typename T>
 concept DatabaseConnection = requires(T conn, const std::string& query) {
-   // Теперь возвращаем DbError вместо std::string
    { conn.Connect(query) } -> std::same_as<std::expected<bool, DbError>>;
    { conn.FetchAll(query) } -> std::same_as<std::expected<Table, DbError>>;
    { conn.ExecuteUpdate(query) } -> std::same_as<std::expected<int, DbError>>;
