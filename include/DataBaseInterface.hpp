@@ -20,6 +20,5 @@ template <typename T>
 concept DatabaseConnection = requires(T conn, const std::string& query) {
    { conn.Connect(query) } -> std::same_as<std::expected<bool, DbError>>;
    { conn.FetchAll(query) } -> std::same_as<std::expected<Table, DbError>>;
-   { conn.ExecuteUpdate(query) } -> std::same_as<std::expected<int, DbError>>;
    { conn.Disconnect() } -> std::same_as<void>;
 };

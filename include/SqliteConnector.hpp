@@ -8,7 +8,6 @@ class SQLiteConnector {
    sqlite3* db = nullptr;
 
   public:
-   std::expected<int, DbError> ExecuteUpdate(const std::string& query) const;
    std::expected<Table, DbError> FetchAll(const std::string& query);
 
    std::expected<Row, DbError> GetTableList();

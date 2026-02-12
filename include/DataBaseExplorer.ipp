@@ -62,8 +62,8 @@ ftxui::ButtonOption CreateRoundedButtonOption() {
    };
    return option;
 }
-template <DatabaseConnection Connector>
 
+template <DatabaseConnection Connector>
 void DataBaseExplorer<Connector>::Ininitalize() {
    req_input = ftxui::Input(&req_text, "Enter SQL request") | ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 1) |
                ftxui::flex | ftxui::border;
@@ -107,9 +107,10 @@ void DataBaseExplorer<Connector>::Ininitalize() {
                 db_result = {{"Ошибка при выполнении запроса"}};
              }
           } else {
-             auto res = conn->ExecuteUpdate(req_text);
+             auto res = conn->FetchAll(req_text + " returning *;");
              if (res.has_value()) {
-                db_result = {{std::format("Success, rows affected: {}", res.value())}};
+                db_result = std::move(res.value());
+                pages.reserve(db_result.size() / rows_per_page);
              } else {
                 // db_result = {{res.error()}}; TODO
                 db_result = {{"Ошибка при выполнении запроса"}};

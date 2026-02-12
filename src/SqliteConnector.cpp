@@ -53,18 +53,6 @@ std::expected<Table, DbError> SQLiteConnector::FetchAll(const std::string& query
    return result;
 }
 
-std::expected<int, DbError> SQLiteConnector::ExecuteUpdate(const std::string& query) const {
-   int ret_code = sqlite3_exec(db, query.c_str(), nullptr, nullptr, nullptr);
-
-   if (ret_code != SQLITE_OK) {
-      std::println(stderr, "[SQLite Error] Execute error: {}", sqlite3_errmsg(db));
-      return std::unexpected(DbError::ExecuteError);
-   }
-   int rows_affected = sqlite3_changes(db);
-
-   return rows_affected;
-}
-
 std::expected<Row, DbError> SQLiteConnector::GetTableList() {
    std::string query =
        "SELECT name FROM sqlite_master "
