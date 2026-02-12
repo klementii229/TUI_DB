@@ -21,7 +21,7 @@ class DataBaseExplorer {
 
   private:
    void Ininitalize();
-   std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page);
+   std::vector<ftxui::Elements> FormatTable(const Table& table, const int current_page, const int rows_per_page);
 
    std::unique_ptr<Connector> conn;
    ftxui::ScreenInteractive screen;
@@ -42,6 +42,6 @@ class DataBaseExplorer {
    std::vector<FormTablElem> pages;
 
    int current_page = 0;
-   const int rows_per_page = 300;
+   int rows_per_page = 300;
 };
 #include "DataBaseExplorer.ipp"

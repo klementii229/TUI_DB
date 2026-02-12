@@ -5,7 +5,7 @@
 #include <ftxui/dom/table.hpp>
 
 #include "DataBaseExplorer.hpp"
-
+#include "DataBaseInterface.hpp"
 ftxui::ButtonOption CreateRoundedButtonOption();
 std::vector<ftxui::Elements> FormatTable(const Table& table, int current_page, const int rows_per_page);
 
@@ -16,13 +16,10 @@ DataBaseExplorer<Connector>::DataBaseExplorer(std::unique_ptr<Connector> conn_)
    main_container = ftxui::Container::Vertical({req_input, btn_send_req, table_component, slider_x, slider_y});
 
    main_window = ftxui::Renderer(main_container, [this] {
-      return ftxui::vbox({ftxui::text("T U I D B") | ftxui::center | ftxui::color(ftxui::Color::Cyan) | ftxui::bold,
-                          ftxui::separator(),
-                          ftxui::hbox({req_input->Render(),
-                                       btn_send_req->Render() | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 30)}) |
+      return ftxui::vbox({ftxui::text("T U I D B") | ftxui::center | ftxui::color(ftxui::Color::Cyan) | ftxui::bold, ftxui::separator(),
+                          ftxui::hbox({req_input->Render(), btn_send_req->Render() | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 30)}) |
                               ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 3),
-                          ftxui::separator(), table_component->Render(), ftxui::separator(), slider_x->Render(),
-                          slider_y->Render()}) |
+                          ftxui::separator(), table_component->Render(), ftxui::separator(), slider_x->Render(), slider_y->Render()}) |
              ftxui::border;
    });
 
@@ -65,8 +62,7 @@ ftxui::ButtonOption CreateRoundedButtonOption() {
 
 template <DatabaseConnection Connector>
 void DataBaseExplorer<Connector>::Ininitalize() {
-   req_input = ftxui::Input(&req_text, "Enter SQL request") | ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 1) |
-               ftxui::flex | ftxui::border;
+   req_input = ftxui::Input(&req_text, "Enter SQL request") | ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 1) | ftxui::flex | ftxui::border;
 
    table_component = ftxui::Renderer([this] {
       if (db_result.empty()) {
@@ -79,8 +75,8 @@ void DataBaseExplorer<Connector>::Ininitalize() {
 
       auto ftxui_table = ftxui::Table(pages[current_page]);
 
-      return ftxui_table.Render() | ftxui::focusPositionRelative(scroll_x, scroll_y) | ftxui::frame |
-             ftxui::vscroll_indicator | ftxui::hscroll_indicator | ftxui::flex;
+      return ftxui_table.Render() | ftxui::focusPositionRelative(scroll_x, scroll_y) | ftxui::frame | ftxui::vscroll_indicator |
+             ftxui::hscroll_indicator | ftxui::flex;
    });
 
    slider_x = ftxui::Slider("Horizontal", &scroll_x, 0.0f, 1.0f, 0.01f);
@@ -103,8 +99,7 @@ void DataBaseExplorer<Connector>::Ininitalize() {
                 db_result = std::move(res.value());
                 pages.reserve(db_result.size() / rows_per_page);
              } else {
-                // db_result = {{res.error()}};      TODO
-                db_result = {{"Ошибка при выполнении запроса"}};
+                // db_result = {{res}};
              }
           } else {
              auto res = conn->FetchAll(req_text + " returning *;");
@@ -122,8 +117,7 @@ void DataBaseExplorer<Connector>::Ininitalize() {
 }
 
 template <DatabaseConnection Connector>
-std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Table& table, int current_page,
-                                                                      const int rows_per_page) {
+std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Table& table, int current_page, const int rows_per_page) {
    using namespace ftxui;
    std::vector<Elements> out{};
    size_t start_index = rows_per_page * current_page;

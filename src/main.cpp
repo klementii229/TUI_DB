@@ -1,13 +1,7 @@
-
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "DataBaseExplorer.hpp"
-#include "DataBaseInterface.hpp"
-#include "LoginForm.hpp"
 #include "SqliteConnector.hpp"
-
+// #include "LoginForm.hpp"
+// #include "DataBaseInterface.hpp"
 using Row = std::vector<std::string>;
 using Table = std::vector<Row>;
 
