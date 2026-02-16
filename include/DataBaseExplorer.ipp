@@ -1,4 +1,5 @@
 #pragma once
+#include <expected>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/dom/elements.hpp>
@@ -94,21 +95,20 @@ void DataBaseExplorer<Connector>::Ininitalize() {
           }
 
           if (copy.find("SELECT") != std::string::npos) {
-             auto res = conn->FetchAll(req_text);
+             std::expected<Table, DbStatus> res = conn->FetchAll(req_text);
              if (res.has_value()) {
                 db_result = std::move(res.value());
                 pages.reserve(db_result.size() / rows_per_page);
              } else {
-                // db_result = {{res}};
+                db_result = {{res.error().details}};
              }
           } else {
-             auto res = conn->FetchAll(req_text + " returning *;");
+             std::expected<Table, DbStatus> res = conn->FetchAll(req_text + " returning *;");
              if (res.has_value()) {
                 db_result = std::move(res.value());
                 pages.reserve(db_result.size() / rows_per_page);
              } else {
-                // db_result = {{res.error()}}; TODO
-                db_result = {{"Ошибка при выполнении запроса"}};
+                db_result = {{res.error().details}};
              }
           }
           screen.Post(ftxui::Event::Custom);
