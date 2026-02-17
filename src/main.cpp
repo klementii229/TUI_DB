@@ -1,37 +1,45 @@
-
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "DataBaseExplorer.hpp"
-#include "DataBaseInterface.hpp"
 #include "LoginForm.hpp"
+#include "PostgresConnector.hpp"
 #include "SqliteConnector.hpp"
 
-using Row = std::vector<std::string>;
-using Table = std::vector<Row>;
-
-int main(void) {
-   /* LoginForm Form = {};
-
+int main() {
+   LoginForm Form = {};
    Form.RUN();
-   auto Connect_Params = Form.GetConnectionParams();
+   auto Params = Form.GetConnectionParams();
 
-   std::unique_ptr<IDatabaseConnector> conn = nullptr;
-   switch (Connect_Params.db_type) {
-      case LoginForm::enum_db_type::SQLite:
-         conn = std::make_unique<SQLiteConnector>();
-         break;
-      default:
-         return 1;
+   auto start_explorer = [&]<typename T>(T&& connector_impl) {
+      using CleanType = std::decay_t<T>;
+      auto conn_ptr = std::make_unique<CleanType>(std::forward<T>(connector_impl));
+      std::expected<bool, DbStatus> res;
+
+      // Статическая проверка типа во время компиляции
+      if constexpr (std::is_same_v<CleanType, PostgresConnector>) {
+         // Для Postgres
+         std::string conn_str = std::format("host={} port={} user={} password={} dbname={}",
+                                            Params.host,
+                                            Params.port,
+                                            Params.username,
+                                            Params.password,
+                                            Params.database);
+         res = conn_ptr->Connect(conn_str);
+
+      } else if constexpr (std::is_same_v<CleanType, SQLiteConnector>) {
+         // Для SQLite передаем только путь/имя
+         res = conn_ptr->Connect(Params.database);
+      }
+
+      if (res && *res) {
+         DataBaseExplorer<CleanType> exp(std::move(conn_ptr));
+         exp.RUN();
+      }
+   };
+
+   if (Params.db_type == LoginForm::enum_db_type::SQLite) {
+      start_explorer(SQLiteConnector{});
+   } else {
+      start_explorer(PostgresConnector{});
    }
-   if (!conn->Connect(Connect_Params.database)) {
-      return 1;
-      }*/
 
-   std::unique_ptr<SQLiteConnector> conn = std::make_unique<SQLiteConnector>();
-   conn->Connect("chinook.db");
-   DataBaseExplorer exp = {std::move(conn)};
-   exp.RUN();
    return 0;
 }

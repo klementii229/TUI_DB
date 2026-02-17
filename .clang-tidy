@@ -2,7 +2,15 @@ Checks: >
   -*,
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-pro-type-reinterpret-cast
-#WarningsAsErrors: ""
-#HeaderFilterRegex: ""
-FormatStyle: google
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-special-member-functions,
+  bugprone-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  -bugprone-unused-return-value,
+  readability-make-member-function-const,
+  readability-redundant-smartptr-get
+
+# Позволяет не стопать компиляцию на мелочах, но видеть их
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
