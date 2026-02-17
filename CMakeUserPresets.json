@@ -5,7 +5,7 @@
             "name": "windows",
             "inherits": "windows-x64",
             "environment": {
-                "VCPKG_ROOT": "$env{HOME}\\Downloads\\vcpkg"
+                "VCPKG_ROOT": "$penv{USERPROFILE}/Downloads/vcpkg"
             }
         },
         {
