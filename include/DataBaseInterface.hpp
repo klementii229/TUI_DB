@@ -8,18 +8,20 @@ using Row = std::vector<std::string>;
 using Table = std::vector<Row>;
 
 enum class DbError {
-   Success = 0,  // Everything is OK
+   Success = 0,  ///< Everything is OK
    // MOST important categories
-   InvalidQuery,     // SQL syntax error
-   ConnectionError,  // Can't connect or lost network
-   ReadWriteError,   // File system or Disk problems
-   AuthError,        // Password/Permissions
-   TableNotFound,    // Table not found
-   Unknown           // Something else
+   InvalidQuery,      ///< SQL syntax error
+   ConnectionError,   ///< Can't connect or lost network
+   BrokenConnection,  ///< Server is unavailable or network configuration is poor
+   LibPqError,        ///< Lib pqxx error
+   ReadWriteError,    ///< File system or Disk problems
+   AuthError,         ///< Password/Permissions
+   TableNotFound,     ///< Table not found
+   Unknown            ///< Something else
 };
 
 struct DbStatus {
-   DbError type;         // Simple enum (small size)
+   DbError type;         // Simple enum
    std::string details;  // Direct message from SQLite/Postgres
 };
 

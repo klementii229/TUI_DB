@@ -20,7 +20,7 @@ class LoginForm {
       std::string password;
       enum_db_type db_type;
    };
-   ConnectionData GetConnectionParams() const;
+   [[nodiscard]] ConnectionData GetConnectionParams() const;
 
   private:
    ftxui::ScreenInteractive screen;

@@ -1,19 +1,19 @@
 {
-  "version": 2,
-  "configurePresets": [
-    {
-      "name": "windows",
-      "inherits": "windows-x64",
-      "environment": {
-        "VCPKG_ROOT": "C:\\Users\\dimak\\Downloads\\vcpkg"
-      }
-    },
-    {
-      "name": "linux",
-      "inherits": "linux-x64",
-      "environment": {
-        "VCPKG_ROOT": "$env{HOME}/.local/share/vcpkg"
-      }
-    }
-  ]
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "windows",
+            "inherits": "windows-x64",
+            "environment": {
+                "VCPKG_ROOT": "$env{HOME}\\Downloads\\vcpkg"
+            }
+        },
+        {
+            "name": "linux",
+            "inherits": "linux-x64",
+            "environment": {
+                "VCPKG_ROOT": "$env{HOME}/.local/share/vcpkg"
+            }
+        }
+    ]
 }

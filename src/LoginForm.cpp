@@ -25,12 +25,19 @@ ftxui::Component LoginForm::CreateConnectionForm() {
    auto container = Container::Vertical({host_input, port_input, db_input, user_input, password_input, db_type_radio, connect_button});
 
    auto renderer = Renderer(container, [this] {
-      return vbox({text(" Подключение к базе данных ") | bold | color(Color::Cyan) | center, separator(),
-                 hbox(text("Хост:     "), host_input->Render()), hbox(text("Порт:     "), port_input->Render()),
-                 hbox(text("База:     "), db_input->Render()), hbox(text("Пользователь: "), user_input->Render()),
-                 hbox(text("Пароль:   "), password_input->Render()), separator(), text("Тип базы данных:"), db_type_radio->Render(),
-                 separator(), connect_button->Render() | center}) |
-             border | size(WIDTH, LESS_THAN, 80);
+      return vbox({text(" Подключение к базе данных ") | bold | color(Color::Cyan) | center,
+                   separator(),
+                   hbox(text("Хост:     "), host_input->Render()),
+                   hbox(text("Порт:     "), port_input->Render()),
+                   hbox(text("База:     "), db_input->Render()),
+                   hbox(text("Пользователь: "), user_input->Render()),
+                   hbox(text("Пароль:   "), password_input->Render()),
+                   separator(),
+                   text("Тип базы данных:"),
+                   db_type_radio->Render(),
+                   separator(),
+                   connect_button->Render() | center})
+             | border | size(WIDTH, LESS_THAN, 80);
    });
    return renderer;
 }
