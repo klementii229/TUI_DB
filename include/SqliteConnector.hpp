@@ -3,27 +3,15 @@
 
 struct sqlite3;
 
-class SQLiteConnector : public IDatabaseConnector {
-  private:
-   sqlite3* db = nullptr;
+class SQLiteConnector {
+private:
+  sqlite3 *db = nullptr;
 
-  public:
-   // ##############################################################
-   std::expected<int, std::string> ExecuteUpdate(const std::string& query) const override;
-   std::expected<Table, std::string> FetchAll(const std::string& query) override;
-   // ##############################################################
-   // ##############################################################
-   std::expected<Row, std::string> GetTableList() override;
-   std::expected<Row, std::string> GetTableSchema(const std::string& tableName) override;
-   // ##############################################################
+public:
+  std::expected<void, DbError> Connect(const std::string &connectionString);
+  std::expected<Table, DbError> FetchAll(const std::string &query);
+  void Disconnect();
 
-   SQLiteConnector() = default;
-   std::expected<bool, std::string> Connect(const std::string& connectionString) override;
-   ~SQLiteConnector() override;
-   void Disconnect() override;
-
-   SQLiteConnector(const SQLiteConnector&) = default;
-   SQLiteConnector(SQLiteConnector&&) = default;
-   SQLiteConnector& operator=(const SQLiteConnector&) = default;
-   SQLiteConnector& operator=(SQLiteConnector&&) = default;
+  SQLiteConnector() = default;
+  ~SQLiteConnector();
 };

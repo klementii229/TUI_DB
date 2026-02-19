@@ -2,8 +2,17 @@ BasedOnStyle: Google
 IndentWidth: 3
 TabWidth: 4
 UseTab: Never
-ColumnLimit: 140
-#AllowAllArgumentsOnNextLine: true
-#BinPackArguments: true
-#BinPackParameters: true
-#AlignAfterOpenBracket: DontAlign
+ColumnLimit: 120
+
+# Разрешает перенос строки перед оператором |, чтобы цепочки модификаторов шли столбцом
+BreakBeforeBinaryOperators: NonAssignment
+
+# Оставляет список элементов {a, b, c} на разных строках, если вы их так написали
+Cpp11BracedListStyle: true
+
+# Не дает упаковщику сваливать аргументы в одну кучу, если они не влезают
+BinPackArguments: false
+BinPackParameters: false
+
+# Выравнивание после открывающей скобки (удобно для Renderer([this] { ... }))
+AlignAfterOpenBracket: Align
