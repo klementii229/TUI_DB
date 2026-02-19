@@ -18,12 +18,18 @@ DataBaseExplorer::DataBaseExplorer(std::unique_ptr<IDatabaseConnector> conn_)
    main_container = ftxui::Container::Vertical({req_input, btn_send_req, table_component, slider_x, slider_y});
 
    main_window = ftxui::Renderer(main_container, [this] {
-      return ftxui::vbox({ftxui::text("T U I D B") | ftxui::center | ftxui::color(ftxui::Color::Cyan) | ftxui::bold, ftxui::separator(),
+      return ftxui::vbox({ftxui::text("T U I D B") | ftxui::center | ftxui::color(ftxui::Color::Cyan) | ftxui::bold,
+                          ftxui::separator(),
                           // Верхняя панель - фиксированная высота
-                          ftxui::hbox({req_input->Render(), btn_send_req->Render() | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 30)}) |
-                              ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 3),
-                          ftxui::separator(), table_component->Render(), ftxui::separator(), slider_x->Render(), slider_y->Render()}) |
-             ftxui::border;
+                          ftxui::hbox({req_input->Render(),
+                                       btn_send_req->Render() | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 30)})
+                              | ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 3),
+                          ftxui::separator(),
+                          table_component->Render(),
+                          ftxui::separator(),
+                          slider_x->Render(),
+                          slider_y->Render()})
+             | ftxui::border;
    });
 }
 
@@ -41,7 +47,8 @@ static ftxui::ButtonOption CreateRoundedButtonOption() {
 }
 
 void DataBaseExplorer::Ininitalize() {
-   req_input = ftxui::Input(&req_text, "Enter SQL request") | ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 1) | ftxui::flex | ftxui::border;
+   req_input = ftxui::Input(&req_text, "Enter SQL request") | ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 1) | ftxui::flex
+               | ftxui::border;
 
    table_component = ftxui::Renderer([this] {
       if (db_result.empty()) {
@@ -50,8 +57,8 @@ void DataBaseExplorer::Ininitalize() {
 
       auto ftxui_table = ftxui::Table(db_result);
       FormatTable(ftxui_table);
-      return ftxui_table.Render() | ftxui::focusPositionRelative(scroll_x, scroll_y) | ftxui::frame | ftxui::vscroll_indicator |
-             ftxui::hscroll_indicator | ftxui::flex;
+      return ftxui_table.Render() | ftxui::focusPositionRelative(scroll_x, scroll_y) | ftxui::frame
+             | ftxui::vscroll_indicator | ftxui::hscroll_indicator | ftxui::flex;
    });
 
    // 2. Делаем компонент фокусируемым
