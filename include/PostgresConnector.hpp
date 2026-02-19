@@ -8,12 +8,10 @@ class PostgresConnector {
    std::unique_ptr<pqxx::connection> conn;
 
   public:
-   std::expected<bool, DbStatus> Connect(const std::string& connectionString);
+   std::expected<void, DbError> Connect(const std::string& connectionString);
    void Disconnect();
-   std::expected<Table, DbStatus> FetchAll(const std::string& query);
+   std::expected<Table, DbError> FetchAll(const std::string& query);
 
    PostgresConnector() = default;
    ~PostgresConnector();
-   PostgresConnector(PostgresConnector&&) = default;
-   PostgresConnector& operator=(PostgresConnector&&) = default;
 };

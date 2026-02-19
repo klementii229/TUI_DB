@@ -7,25 +7,16 @@
 
 void PostgresConnector::Disconnect() { conn.reset(); }
 
-std::expected<bool, DbStatus> PostgresConnector::Connect(const std::string& connectionString) {
+std::expected<void, DbError> PostgresConnector::Connect(const std::string& connectionString) {
    try {
       conn = std::make_unique<pqxx::connection>(connectionString);
-   } catch (const pqxx::broken_connection& e) {
-      return std::unexpected(DbStatus{.type = DbError::BrokenConnection, .details = e.what()});
-
-   } catch (const pqxx::sql_error& e) {
-      return std::unexpected(DbStatus{.type = DbError::ConnectionError, .details = e.what()});
-
-   } catch (const pqxx::failure& e) {
-      return std::unexpected(DbStatus{.type = DbError::LibPqError, .details = e.what()});
-
    } catch (const std::exception& e) {
-      return std::unexpected(DbStatus{.type = DbError::Unknown, .details = e.what()});
+      return std::unexpected(DbError{.details = e.what()});
    }
-   return true;
+   return {};
 }
 
-std::expected<Table, DbStatus> PostgresConnector::FetchAll(const std::string& query) {
+std::expected<Table, DbError> PostgresConnector::FetchAll(const std::string& query) {
    Table result;
    try {
       pqxx::work tx{*conn};
@@ -51,17 +42,8 @@ std::expected<Table, DbStatus> PostgresConnector::FetchAll(const std::string& qu
 
       tx.commit();
 
-   } catch (const pqxx::sql_error& e) {
-      return std::unexpected(DbStatus{.type = DbError::InvalidQuery, .details = e.what()});
-
-   } catch (const pqxx::broken_connection& e) {
-      return std::unexpected(DbStatus{.type = DbError::BrokenConnection, .details = e.what()});
-
-   } catch (const pqxx::failure& e) {
-      return std::unexpected(DbStatus{.type = DbError::LibPqError, .details = e.what()});
-
    } catch (const std::exception& e) {
-      return std::unexpected(DbStatus{.type = DbError::Unknown, .details = e.what()});
+      return std::unexpected(DbError{.details = e.what()});
    }
 
    return result;

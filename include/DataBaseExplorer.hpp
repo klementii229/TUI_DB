@@ -44,6 +44,8 @@ class DataBaseExplorer {
    ftxui::Component slider_x;
    ftxui::Component slider_y;
    std::vector<FormTablElem> pages;
+   ftxui::Element rendered_table_cache;  // КЭШ ГРАФИКИ
+   bool table_needs_rebuild = true;
 
    size_t current_page = 0;
    size_t max_page = 0;

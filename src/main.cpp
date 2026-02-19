@@ -1,44 +1,55 @@
+
+#include <print>
+
 #include "DataBaseExplorer.hpp"
 #include "LoginForm.hpp"
 #include "PostgresConnector.hpp"
 #include "SqliteConnector.hpp"
 
-int main() {
-   LoginForm Form = {};
-   Form.RUN();
-   auto Params = Form.GetConnectionParams();
+std::string make_conn_str(const LoginForm::ConnectionData& d) {
+   return std::format(
+       "host={} port={} user={} password={} dbname={}", d.host, d.port, d.username, d.password, d.database);
+}
 
-   auto start_explorer = [&]<typename T>(T&& connector_impl) {
-      using CleanType = std::decay_t<T>;
-      auto conn_ptr = std::make_unique<CleanType>(std::forward<T>(connector_impl));
-      std::expected<bool, DbStatus> res;
+// Explorer Factory
+template <DatabaseConnection Connector>
+void start_explorer(LoginForm::ConnectionData& params) {
+   auto conn = std::make_unique<Connector>();
 
-      // Статическая проверка типа во время компиляции
-      if constexpr (std::is_same_v<CleanType, PostgresConnector>) {
-         // Для Postgres
-         std::string conn_str = std::format("host={} port={} user={} password={} dbname={}",
-                                            Params.host,
-                                            Params.port,
-                                            Params.username,
-                                            Params.password,
-                                            Params.database);
-         res = conn_ptr->Connect(conn_str);
+   std::expected<void, DbError> connected;
 
-      } else if constexpr (std::is_same_v<CleanType, SQLiteConnector>) {
-         // Для SQLite передаем только путь/имя
-         res = conn_ptr->Connect(Params.database);
-      }
+   if constexpr (std::is_same_v<Connector, PostgresConnector>) {
+      connected = conn->Connect(make_conn_str(params));
+   } else if constexpr (std::is_same_v<Connector, SQLiteConnector>) {
+      connected = conn->Connect(params.database);
+   }
 
-      if (res && *res) {
-         DataBaseExplorer<CleanType> exp(std::move(conn_ptr));
-         exp.RUN();
-      }
-   };
-
-   if (Params.db_type == LoginForm::enum_db_type::SQLite) {
-      start_explorer(SQLiteConnector{});
+   if (connected) {
+      DataBaseExplorer<Connector> explorer(std::move(conn));
+      explorer.RUN();
    } else {
-      start_explorer(PostgresConnector{});
+      std::println(stderr, "{}", connected.error().details);
+   }
+}
+
+int main() {
+   LoginForm login_form;
+   login_form.RUN();
+
+   auto params = login_form.GetConnectionParams();
+
+   switch (params.db_type) {
+      case LoginForm::enum_db_type::PostgreSQL:
+         start_explorer<PostgresConnector>(params);
+         break;
+
+      case LoginForm::enum_db_type::SQLite:
+         start_explorer<SQLiteConnector>(params);
+         break;
+
+      case LoginForm::enum_db_type::MariaDB:
+         // start_explorer<MariaDBConnector>(params);
+         break;
    }
 
    return 0;
