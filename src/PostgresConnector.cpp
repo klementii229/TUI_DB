@@ -2,18 +2,19 @@
 
 #include <exception>
 #include <memory>
+#include <optional>
 
 #include "DataBaseInterface.hpp"
 
 void PostgresConnector::Disconnect() { conn.reset(); }
 
-std::expected<void, DbError> PostgresConnector::Connect(const std::string& connectionString) {
+std::optional<DbError> PostgresConnector::Connect(const std::string& connectionString) {
    try {
       conn = std::make_unique<pqxx::connection>(connectionString);
    } catch (const std::exception& e) {
-      return std::unexpected(DbError{.details = e.what()});
+      return DbError{.details = e.what()};
    }
-   return {};
+   return std::nullopt;
 }
 
 std::expected<Table, DbError> PostgresConnector::FetchAll(const std::string& query) {

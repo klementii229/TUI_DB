@@ -16,7 +16,7 @@ template <DatabaseConnection Connector>
 void start_explorer(LoginForm::ConnectionData& params) {
    auto conn = std::make_unique<Connector>();
 
-   std::expected<void, DbError> connected;
+   std::optional<DbError> connected;
 
    if constexpr (std::is_same_v<Connector, PostgresConnector>) {
       connected = conn->Connect(make_conn_str(params));
@@ -28,7 +28,7 @@ void start_explorer(LoginForm::ConnectionData& params) {
       DataBaseExplorer<Connector> explorer(std::move(conn));
       explorer.RUN();
    } else {
-      std::println(stderr, "{}", connected.error().details);
+      std::println(stderr, "{}", connected.value().details);
    }
 }
 
