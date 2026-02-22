@@ -15,7 +15,7 @@ using FormTablElem = std::vector<ftxui::Elements>;
 template <DatabaseConnection Connector>
 class DataBaseExplorer {
   public:
-   void RUN();
+   void Explore();
 
    DataBaseExplorer(std::unique_ptr<Connector> conn_);
    DataBaseExplorer() = delete;

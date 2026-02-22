@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
+#include <ftxui/dom/direction.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/table.hpp>
 
@@ -34,16 +35,18 @@ DataBaseExplorer<Connector>::DataBaseExplorer(std::unique_ptr<Connector> conn_)
    });
 
    main_window = ftxui::Renderer(main_container, [this] {
-      return ftxui::vbox({
-         header->Render(),
-         ftxui::separator(),
-         table_component->Render(),
-         ftxui::separator(),
-         slider_x->Render(),
-         slider_y->Render()
-      }) | ftxui::border;
+       return ftxui::vbox({
+           header->Render(),
+           ftxui::separator(),
+           table_component->Render() | ftxui::flex,
+           ftxui::separator(),
+           slider_x->Render(),
+           slider_y->Render()
+       }) | ftxui::border;
    });
    // clang-format on
+   //
+   //
    // Пагинация
    main_window = main_window | ftxui::CatchEvent([this](ftxui::Event event) {
                     if (event == ftxui::Event::PageUp) {
@@ -52,8 +55,7 @@ DataBaseExplorer<Connector>::DataBaseExplorer(std::unique_ptr<Connector> conn_)
                           table_needs_rebuild = true;
                        }
                        return true;
-                    }
-                    if (event == ftxui::Event::PageDown) {
+                    } else if (event == ftxui::Event::PageDown) {
                        if (current_page < max_page) {
                           current_page++;
                           table_needs_rebuild = true;
@@ -72,6 +74,11 @@ void DataBaseExplorer<Connector>::Ininitalize() {
    btn_send_req = ftxui::Button(
        "Enter",
        [this] {
+          if (req_text.empty()) {
+             error_message = "Error: empty request";
+             db_result.resize(30);
+             return;
+          }
           current_page = 0;
           db_result.clear();
           pages.clear();
@@ -107,12 +114,12 @@ void DataBaseExplorer<Connector>::Ininitalize() {
    // clang-format off
    header = ftxui::Renderer([this] {
       return ftxui::vbox({
-         ftxui::text("T U I D B") | ftxui::center | ftxui::bold | ftxui::color(ftxui::Color::Cyan),
-         ftxui::separator(),
-         ftxui::hbox({
-            req_input->Render() | ftxui::flex,
-            btn_send_req->Render() | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 20)
-         })
+          ftxui::text("T U I D B") | ftxui::center | ftxui::bold | ftxui::color(ftxui::Color::Cyan),
+          ftxui::separator(),
+          ftxui::hbox({
+             req_input->Render() | ftxui::flex,
+             btn_send_req->Render() | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 20)
+          })
       });
    });
    // clang-format on
@@ -140,10 +147,9 @@ void DataBaseExplorer<Connector>::Ininitalize() {
              | ftxui::vscroll_indicator | ftxui::hscroll_indicator | ftxui::flex;
    });
 
-   slider_x = ftxui::Slider("Horizontal", &scroll_x, 0.0f, 1.0f, 0.01f);
+   slider_x = ftxui::Slider("Horizontal", &scroll_x, 0.0f, 1.0f, 0.02f);
    slider_y = ftxui::Slider("Vertical  ", &scroll_y, 0.0f, 1.0f, 0.01f);
 }
-
 template <DatabaseConnection Connector>
 std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Table& table,
                                                                       size_t current_page,
@@ -151,8 +157,9 @@ std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Tabl
    using namespace ftxui;
    std::vector<Elements> out{};
 
+   if (table.empty()) return {};
+
    size_t start_index = rows_per_page * current_page;
-   // Проверка границ, чтобы не выйти за пределы вектора
    size_t end_index = std::min(start_index + rows_per_page, table.size() - 1);
 
    out.reserve(rows_per_page + 1);
@@ -185,6 +192,6 @@ std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Tabl
 }
 
 template <DatabaseConnection Connector>
-void DataBaseExplorer<Connector>::RUN() {
+void DataBaseExplorer<Connector>::Explore() {
    screen.Loop(main_window);
 }

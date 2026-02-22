@@ -17,9 +17,9 @@ LoginForm::LoginForm() : screen(ftxui::ScreenInteractive::Fullscreen()) {
    });
 }
 
-void LoginForm::RUN() { screen.Loop(CreateConnectionForm()); }
+void LoginForm::Start_Form() { screen.Loop(InitForm()); }
 
-ftxui::Component LoginForm::CreateConnectionForm() {
+ftxui::Component LoginForm::InitForm() {
    using namespace ftxui;
 
    auto container = Container::Vertical(
