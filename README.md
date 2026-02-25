@@ -23,8 +23,17 @@ Simple TUI-app for working with database, SQLite and PostgreSQL.
 
 ### Launch
 
+#### Windows
+
 ```bash
-cmake -B build --preset=linux/windows
+cmake -B build --preset=windows
+cmake --build build/
+```
+
+#### Linux
+
+```bash
+cmake -B build --preset=windows
 cmake --build build/
 ```
 
