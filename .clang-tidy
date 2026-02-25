@@ -8,6 +8,7 @@ Checks: >
   modernize-*,
   -modernize-use-trailing-return-type,
   -bugprone-unused-return-value,
+  -modernize-use-nodiscard,
   readability-make-member-function-const,
   readability-redundant-smartptr-get
 

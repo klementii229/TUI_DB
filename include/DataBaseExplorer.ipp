@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
+#include <ftxui/dom/direction.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/dom/table.hpp>
 
@@ -34,17 +35,19 @@ DataBaseExplorer<Connector>::DataBaseExplorer(std::unique_ptr<Connector> conn_)
    });
 
    main_window = ftxui::Renderer(main_container, [this] {
-      return ftxui::vbox({
-         header->Render(),
-         ftxui::separator(),
-         table_component->Render(),
-         ftxui::separator(),
-         slider_x->Render(),
-         slider_y->Render()
-      }) | ftxui::border;
+       return ftxui::vbox({
+           header->Render(),
+           ftxui::separator(),
+           table_component->Render() | ftxui::flex,
+           ftxui::separator(),
+           slider_x->Render(),
+           slider_y->Render()
+       }) | ftxui::border;
    });
    // clang-format on
-   // Пагинация
+   //
+   //
+   // Pagination, switching window
    main_window = main_window | ftxui::CatchEvent([this](ftxui::Event event) {
                     if (event == ftxui::Event::PageUp) {
                        if (current_page > 0) {
@@ -52,8 +55,7 @@ DataBaseExplorer<Connector>::DataBaseExplorer(std::unique_ptr<Connector> conn_)
                           table_needs_rebuild = true;
                        }
                        return true;
-                    }
-                    if (event == ftxui::Event::PageDown) {
+                    } else if (event == ftxui::Event::PageDown) {
                        if (current_page < max_page) {
                           current_page++;
                           table_needs_rebuild = true;
@@ -72,6 +74,11 @@ void DataBaseExplorer<Connector>::Ininitalize() {
    btn_send_req = ftxui::Button(
        "Enter",
        [this] {
+          if (req_text.empty()) {
+             error_message = "Error: empty request";
+             db_result.resize(30);
+             return;
+          }
           current_page = 0;
           db_result.clear();
           pages.clear();
@@ -80,7 +87,9 @@ void DataBaseExplorer<Connector>::Ininitalize() {
 
           std::ranges::transform(
               copy, copy.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
-
+          //
+          // sending a request to the database
+          //
           auto process_res = [this](std::expected<Table, DbError> res) {
              if (res.has_value()) {
                 error_message = "";
@@ -93,9 +102,11 @@ void DataBaseExplorer<Connector>::Ininitalize() {
              table_needs_rebuild = true;
           };
 
+          // for select request
           if (copy.find("SELECT") != std::string::npos) {
              process_res(conn->FetchAll(req_text));
           } else {
+             // for ohers (update, delete, create)
              std::string clean_req = req_text;
              if (!clean_req.empty() && clean_req.back() == ';') clean_req.pop_back();
              process_res(conn->FetchAll(clean_req + " RETURNING *;"));
@@ -107,12 +118,12 @@ void DataBaseExplorer<Connector>::Ininitalize() {
    // clang-format off
    header = ftxui::Renderer([this] {
       return ftxui::vbox({
-         ftxui::text("T U I D B") | ftxui::center | ftxui::bold | ftxui::color(ftxui::Color::Cyan),
-         ftxui::separator(),
-         ftxui::hbox({
-            req_input->Render() | ftxui::flex,
-            btn_send_req->Render() | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 20)
-         })
+          ftxui::text("T U I D B") | ftxui::center | ftxui::bold | ftxui::color(ftxui::Color::Cyan),
+          ftxui::separator(),
+          ftxui::hbox({
+             req_input->Render() | ftxui::flex,
+             btn_send_req->Render() | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 20)
+          })
       });
    });
    // clang-format on
@@ -124,26 +135,23 @@ void DataBaseExplorer<Connector>::Ininitalize() {
          return ftxui::text("No data") | ftxui::center | ftxui::flex;
       }
 
-      // вызываем ftxui::Table(...).Render() только один раз
+      // calling ftxui::Table(...).Render() 1 ешьу
       if (table_needs_rebuild) {
          if (pages.size() <= current_page) {
             pages.push_back(FormatTable(db_result, current_page, rows_per_page));
          }
-         // Сохраняем тяжелый объект рендеринга в кэш
+         // save to cache
          rendered_table_cache = ftxui::Table(pages[current_page]).Render();
          table_needs_rebuild = false;
       }
 
-      // При движении слайдеров scroll_x/y используется уже готовый
-      // rendered_table_cache
       return rendered_table_cache | ftxui::focusPositionRelative(scroll_x, scroll_y) | ftxui::frame
              | ftxui::vscroll_indicator | ftxui::hscroll_indicator | ftxui::flex;
    });
 
-   slider_x = ftxui::Slider("Horizontal", &scroll_x, 0.0f, 1.0f, 0.01f);
+   slider_x = ftxui::Slider("Horizontal", &scroll_x, 0.0f, 1.0f, 0.02f);
    slider_y = ftxui::Slider("Vertical  ", &scroll_y, 0.0f, 1.0f, 0.01f);
 }
-
 template <DatabaseConnection Connector>
 std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Table& table,
                                                                       size_t current_page,
@@ -151,8 +159,9 @@ std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Tabl
    using namespace ftxui;
    std::vector<Elements> out{};
 
+   if (table.empty()) return {};
+
    size_t start_index = rows_per_page * current_page;
-   // Проверка границ, чтобы не выйти за пределы вектора
    size_t end_index = std::min(start_index + rows_per_page, table.size() - 1);
 
    out.reserve(rows_per_page + 1);
@@ -171,12 +180,12 @@ std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Tabl
       return row_elements;
    };
 
-   // Всегда добавляем заголовок (индекс 0), если мы не на первой странице
+   // add a header if we are not on the fist page
    if (current_page != 0 && !table.empty()) {
       out.push_back(process_row(0));
    }
 
-   // Добавляем данные текущей страницы
+   // add current page elements
    for (size_t i = (current_page == 0 ? 0 : start_index + 1); i <= end_index; i++) {
       out.push_back(process_row(i));
    }
@@ -185,6 +194,6 @@ std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Tabl
 }
 
 template <DatabaseConnection Connector>
-void DataBaseExplorer<Connector>::RUN() {
+void DataBaseExplorer<Connector>::Explore() {
    screen.Loop(main_window);
 }

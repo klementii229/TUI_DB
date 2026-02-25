@@ -15,7 +15,7 @@ using FormTablElem = std::vector<ftxui::Elements>;
 template <DatabaseConnection Connector>
 class DataBaseExplorer {
   public:
-   void RUN();
+   void Explore();
 
    DataBaseExplorer(std::unique_ptr<Connector> conn_);
    DataBaseExplorer() = delete;
@@ -44,7 +44,7 @@ class DataBaseExplorer {
    ftxui::Component slider_x;
    ftxui::Component slider_y;
    std::vector<FormTablElem> pages;
-   ftxui::Element rendered_table_cache;  // КЭШ ГРАФИКИ
+   ftxui::Element rendered_table_cache;
    bool table_needs_rebuild = true;
 
    size_t current_page = 0;

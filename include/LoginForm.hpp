@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdint>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
@@ -8,8 +7,8 @@
 class LoginForm {
   public:
    LoginForm();
-   void RUN();
-   ftxui::Component CreateConnectionForm();
+   void Start_Form();
+   ftxui::Component InitForm();
    enum class enum_db_type : uint8_t;
 
    struct ConnectionData {
@@ -20,7 +19,8 @@ class LoginForm {
       std::string password;
       enum_db_type db_type;
    };
-   [[nodiscard]] ConnectionData GetConnectionParams() const;
+
+   ConnectionData GetConnectionParams() const;
 
   private:
    ftxui::ScreenInteractive screen;

@@ -11,7 +11,6 @@ find_package(Threads REQUIRED)
 find_package(ftxui CONFIG REQUIRED)
 find_package(libpqxx  CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
-find_package(SQLiteCpp CONFIG REQUIRED)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c")
 file(GLOB_RECURSE HEADERS "include/*.h" "include/*.hpp")
@@ -28,5 +27,4 @@ target_link_libraries(tui_db
         ftxui::dom ftxui::screen ftxui::component
         libpqxx::pqxx
         unofficial::sqlite3::sqlite3
-        SQLiteCpp
 )

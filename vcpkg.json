@@ -1,7 +1,7 @@
 {
     "name": "tui-db",
     "version": "0.1.0",
-    "dependencies": ["ftxui", "sqlite3", "libpq", "libpqxx", "sqlitecpp"],
+    "dependencies": ["ftxui", "sqlite3", "libpq", "libpqxx"],
     "overrides": [
         {
             "name": "ftxui",
@@ -18,10 +18,6 @@
         {
             "name": "libpqxx",
             "version": "7.10.5"
-        },
-        {
-            "name": "sqlitecpp",
-            "version": "3.3.3"
         }
     ],
     "builtin-baseline": "66c0373dc7fca549e5803087b9487edfe3aca0a1"
