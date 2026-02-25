@@ -49,6 +49,6 @@ class DataBaseExplorer {
 
    size_t current_page = 0;
    size_t max_page = 0;
-   size_t rows_per_page = 300;
+   size_t rows_per_page = 500;
 };
 #include "DataBaseExplorer.ipp"
