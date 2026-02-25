@@ -33,6 +33,10 @@ until you decide to recreate the _build_ folder.
 
 ---
 
+See also a [small reference guide](doc/doc.md)
+
+---
+
 ### Example
 
 #### Login Form
