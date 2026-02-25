@@ -33,8 +33,8 @@ until you decide to recreate the _build_ folder.
 
 ---
 
-See also a [small reference guide](doc/doc.md).
-Or [русская версия гайда](doc/doc_ru.md)
+See also a [small reference guide](doc/doc.md)
+or [русская версия гайда](doc/doc_ru.md)
 
 ---
 
