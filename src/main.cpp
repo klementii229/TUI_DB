@@ -1,4 +1,3 @@
-
 #include <print>
 
 #include "DataBaseExplorer.hpp"
@@ -47,7 +46,7 @@ int main() {
          start_explorer<SQLiteConnector>(params);
          break;
 
-      case LoginForm::enum_db_type::MariaDB:
+      case LoginForm::enum_db_type::MariaDB:  // support will be added in the future
          // start_explorer<MariaDBConnector>(params);
          break;
    }

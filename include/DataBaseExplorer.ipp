@@ -47,7 +47,7 @@ DataBaseExplorer<Connector>::DataBaseExplorer(std::unique_ptr<Connector> conn_)
    // clang-format on
    //
    //
-   // Пагинация
+   // Pagination, switching window
    main_window = main_window | ftxui::CatchEvent([this](ftxui::Event event) {
                     if (event == ftxui::Event::PageUp) {
                        if (current_page > 0) {
@@ -87,7 +87,9 @@ void DataBaseExplorer<Connector>::Ininitalize() {
 
           std::ranges::transform(
               copy, copy.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
-
+          //
+          // sending a request to the database
+          //
           auto process_res = [this](std::expected<Table, DbError> res) {
              if (res.has_value()) {
                 error_message = "";
@@ -100,9 +102,11 @@ void DataBaseExplorer<Connector>::Ininitalize() {
              table_needs_rebuild = true;
           };
 
+          // for select request
           if (copy.find("SELECT") != std::string::npos) {
              process_res(conn->FetchAll(req_text));
           } else {
+             // for ohers (update, delete, create)
              std::string clean_req = req_text;
              if (!clean_req.empty() && clean_req.back() == ';') clean_req.pop_back();
              process_res(conn->FetchAll(clean_req + " RETURNING *;"));
@@ -131,18 +135,16 @@ void DataBaseExplorer<Connector>::Ininitalize() {
          return ftxui::text("No data") | ftxui::center | ftxui::flex;
       }
 
-      // вызываем ftxui::Table(...).Render() только один раз
+      // calling ftxui::Table(...).Render() 1 ешьу
       if (table_needs_rebuild) {
          if (pages.size() <= current_page) {
             pages.push_back(FormatTable(db_result, current_page, rows_per_page));
          }
-         // Сохраняем тяжелый объект рендеринга в кэш
+         // save to cache
          rendered_table_cache = ftxui::Table(pages[current_page]).Render();
          table_needs_rebuild = false;
       }
 
-      // При движении слайдеров scroll_x/y используется уже готовый
-      // rendered_table_cache
       return rendered_table_cache | ftxui::focusPositionRelative(scroll_x, scroll_y) | ftxui::frame
              | ftxui::vscroll_indicator | ftxui::hscroll_indicator | ftxui::flex;
    });
@@ -178,12 +180,12 @@ std::vector<ftxui::Elements> DataBaseExplorer<Connector>::FormatTable(const Tabl
       return row_elements;
    };
 
-   // Всегда добавляем заголовок (индекс 0), если мы не на первой странице
+   // add a header if we are not on the fist page
    if (current_page != 0 && !table.empty()) {
       out.push_back(process_row(0));
    }
 
-   // Добавляем данные текущей страницы
+   // add current page elements
    for (size_t i = (current_page == 0 ? 0 : start_index + 1); i <= end_index; i++) {
       out.push_back(process_row(i));
    }

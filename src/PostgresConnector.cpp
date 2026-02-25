@@ -19,6 +19,9 @@ std::optional<DbError> PostgresConnector::Connect(const std::string& connectionS
 
 std::expected<Table, DbError> PostgresConnector::FetchAll(const std::string& query) {
    Table result;
+   if (!conn->is_open()) {
+      return std::unexpected(DbError{.details = "Database not connected."});
+   }
    try {
       pqxx::work tx{*conn};
       pqxx::result p_res = tx.exec(query);

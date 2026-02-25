@@ -11,7 +11,7 @@ LoginForm::LoginForm() : screen(ftxui::ScreenInteractive::Fullscreen()) {
    password_input = ftxui::Input(&connection_data.password, "");
    db_type_radio = ftxui::Radiobox(&db_types, &db_type_selected);
 
-   connect_button = ftxui::Button("Подключиться", [this] {
+   connect_button = ftxui::Button("Connect", [this] {
       connection_data.db_type = static_cast<enum_db_type>(db_type_selected);
       screen.Exit();
    });
@@ -27,15 +27,15 @@ ftxui::Component LoginForm::InitForm() {
 
    auto renderer = Renderer(container, [this] {
       // clang-format off
-      return vbox({text(" Подключение к базе данных ") | bold | color(Color::Cyan) | center,
+      return vbox({text(" Connect to the database ") | bold | color(Color::Cyan) | center,
                    separator(),
-                   hbox(text("Хост:     "), host_input->Render()),
-                   hbox(text("Порт:     "), port_input->Render()),
-                   hbox(text("База:     "), db_input->Render()),
-                   hbox(text("Пользователь: "), user_input->Render()),
-                   hbox(text("Пароль:   "), password_input->Render()),
+                   hbox(text("Host:     "), host_input->Render()),
+                   hbox(text("Port:     "), port_input->Render()),
+                   hbox(text("Base:     "), db_input->Render()),
+                   hbox(text("User:     "), user_input->Render()),
+                   hbox(text("Password: "), password_input->Render()),
                    separator(),
-                   text("Тип базы данных:"),
+                   text("Database type:"),
                    db_type_radio->Render(),
                    separator(),
                    connect_button->Render() | center})

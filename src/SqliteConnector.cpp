@@ -12,7 +12,7 @@ void SqliteDeleter::operator()(sqlite3* db) const { sqlite3_close(db); }
 using UniqueStmtPtr = std::unique_ptr<sqlite3_stmt, SQLiteStmtDeleter>;
 
 std::optional<DbError> SQLiteConnector::Connect(const std::string& connectionString) {
-   if (db) return std::nullopt;  // Уже подключено
+   if (db) return std::nullopt;  // already connect
 
    sqlite3* raw_ptr = nullptr;
    const int rc = sqlite3_open(connectionString.c_str(), &raw_ptr);
