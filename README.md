@@ -33,7 +33,7 @@ cmake --build build/
 #### Linux
 
 ```bash
-cmake -B build --preset=windows
+cmake -B build --preset=linux
 cmake --build build/
 ```
 
